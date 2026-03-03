@@ -520,12 +520,13 @@ body {
 }
 
 .springboard-action-btn:hover {
-    background-color: var(--dashboard-hover);
+    color: var(--dashboard-background);
+    background-color: var(--select-color);
 }
 
 .springboard-action-btn svg {
-    width: 18px;
-    height: 18px;
+    width: 24px;
+    height: 24px;
 }
 
 /* --- Category Pills Row --- */
