@@ -193,6 +193,8 @@ const icons = {
     code: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>`,
     clock: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`,
     empty: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>`,
+    devCenter: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>`,
+    docs: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>`,
 };
 
 const TabApps = {
@@ -202,6 +204,7 @@ const TabApps = {
 
     // Internal state
     _activeFilter: 'all',
+    _activeCategory: null, // selected category on "All" tab
     _pinnedAppUuids: [],
     _$el: null,
     _searchQuery: '',
@@ -231,10 +234,6 @@ const TabApps = {
         h += `<button class="springboard-filter-pill" data-filter="pinned">${icons.pin} Pinned</button>`;
         h += `<button class="springboard-filter-pill" data-filter="recent">${icons.clock} Recent</button>`;
         h += `<button class="springboard-filter-pill" data-filter="my-apps">${icons.code} My Apps</button>`;
-
-        for ( const name of CATEGORY_LIST ) {
-            h += `<button class="springboard-filter-pill" data-filter="category:${html_encode(name)}">${html_encode(name)}</button>`;
-        }
 
         h += '</div>'; // filter-bar-scroll
         h += '</div>'; // filter-bar
@@ -281,8 +280,27 @@ const TabApps = {
             $el_window.find('.springboard-filter-pill').removeClass('active');
             $pill.addClass('active');
 
+            // Reset category selection when switching tabs
+            if ( filter !== 'all' ) {
+                this._activeCategory = null;
+            }
+
             this._activeFilter = filter;
             this._loadFilteredApps(filter);
+        });
+
+        // Category sidebar click handler
+        $el_window.on('click', '.springboard-category-item', (e) => {
+            const $item = $(e.currentTarget);
+            const category = $item.attr('data-category') || null;
+
+            if ( this._activeCategory === category ) {
+                // Clicking the active category deselects it
+                this._activeCategory = null;
+            } else {
+                this._activeCategory = category;
+            }
+            this._loadFilteredApps(this._activeFilter);
         });
 
         // Sort button handler
@@ -414,10 +432,31 @@ const TabApps = {
         this._allApps = [...realApps, ...mockApps];
     },
 
+    _renderCategorySidebar () {
+        let h = '<div class="springboard-category-sidebar">';
+        h += `<div class="springboard-category-item${!this._activeCategory ? ' active' : ''}" data-category="">All Categories</div>`;
+        for ( const name of CATEGORY_LIST ) {
+            h += `<div class="springboard-category-item${this._activeCategory === name ? ' active' : ''}" data-category="${html_encode(name)}">${html_encode(name)}</div>`;
+        }
+        h += '</div>';
+        return h;
+    },
+
     async _loadFilteredApps (filter) {
         if ( ! this._$el ) return;
+        const $gridContainer = this._$el.find('.springboard-grid-container');
         const $grid = this._$el.find('.springboard-grid');
         const $empty = this._$el.find('.springboard-empty');
+
+        // Remove any existing sidebar
+        $gridContainer.find('.springboard-category-sidebar').remove();
+        $gridContainer.removeClass('has-sidebar');
+
+        // Show category sidebar on "All" tab
+        if ( filter === 'all' ) {
+            $gridContainer.addClass('has-sidebar');
+            $gridContainer.prepend(this._renderCategorySidebar());
+        }
 
         $grid.html('<div class="springboard-loading">Loading...</div>');
         $empty.hide();
@@ -429,10 +468,19 @@ const TabApps = {
         try {
             if ( filter === 'all' ) {
                 apps = this._allApps;
+                // Apply category filter if one is selected
+                if ( this._activeCategory ) {
+                    apps = apps.filter(app => app.category === this._activeCategory);
+                }
             } else if ( filter === 'pinned' ) {
                 await this._loadPinnedApps();
-                const pinnedSet = new Set(this._pinnedAppUuids);
-                apps = this._allApps.filter(app => pinnedSet.has(app.uuid));
+                const pinnedUuids = new Set(this._pinnedAppUuids);
+                // Also include apps pinned to the taskbar
+                const taskbarNames = new Set(
+                    (window.user?.taskbar_items || []).map(item => item.name),
+                );
+                apps = this._allApps.filter(app =>
+                    pinnedUuids.has(app.uuid) || taskbarNames.has(app.name));
             } else if ( filter === 'recent' ) {
                 apps = await this._fetchRecentApps();
             } else if ( filter === 'my-apps' ) {
@@ -465,6 +513,22 @@ const TabApps = {
             $grid.empty();
             $empty.show();
 
+            // Still show dev shortcuts on empty My Apps tab
+            $gridContainer.find('.springboard-dev-shortcuts').remove();
+            if ( filter === 'my-apps' ) {
+                const shortcutsHtml = `<div class="springboard-dev-shortcuts">
+                    <a class="springboard-dev-shortcut" href="/app/dev-center" target="_blank">
+                        ${icons.devCenter}
+                        <span>Dev Center</span>
+                    </a>
+                    <a class="springboard-dev-shortcut" href="https://docs.puter.com" target="_blank">
+                        ${icons.docs}
+                        <span>Docs</span>
+                    </a>
+                </div>`;
+                $grid.before(shortcutsHtml);
+            }
+
             if ( this._searchQuery ) {
                 $empty.find('.springboard-empty-title').text('No apps match your search');
                 $empty.find('.springboard-empty-subtitle').text('Try a different search term');
@@ -488,11 +552,29 @@ const TabApps = {
         }
 
         $empty.hide();
-        $grid.html(this._renderAppsGrid(apps));
+
+        // Show developer shortcuts on My Apps tab
+        $gridContainer.find('.springboard-dev-shortcuts').remove();
+        if ( filter === 'my-apps' ) {
+            const shortcutsHtml = `<div class="springboard-dev-shortcuts">
+                <a class="springboard-dev-shortcut" href="/app/dev-center" target="_blank">
+                    ${icons.devCenter}
+                    <span>Dev Center</span>
+                </a>
+                <a class="springboard-dev-shortcut" href="https://docs.puter.com" target="_blank">
+                    ${icons.docs}
+                    <span>Docs</span>
+                </a>
+            </div>`;
+            $grid.before(shortcutsHtml);
+        }
+
+        $grid.html(this._renderAppsGrid(apps, filter));
     },
 
-    _renderAppsGrid (apps) {
+    _renderAppsGrid (apps, filter) {
         let h = '';
+        const showPinBadge = filter !== 'pinned';
         for ( const app of apps ) {
             const isPinned = this._pinnedAppUuids.includes(app.uuid);
             h += `<div class="springboard-app${isPinned ? ' is-pinned' : ''}"
@@ -501,7 +583,7 @@ const TabApps = {
                        title="${html_encode(app.title)}">`;
             h += '<div class="springboard-app-icon-wrapper">';
             h += `<img class="springboard-app-icon" src="${html_encode(app.icon || window.icons['app.svg'])}" loading="lazy">`;
-            if ( isPinned ) {
+            if ( isPinned && showPinBadge ) {
                 h += `<div class="springboard-pin-badge">${icons.pinSmall}</div>`;
             }
             h += '</div>';
