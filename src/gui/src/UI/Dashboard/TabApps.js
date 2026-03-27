@@ -20,7 +20,7 @@
 /* eslint-disable no-invalid-this */
 /* eslint-disable @stylistic/quotes */
 import UIContextMenu from '../UIContextMenu.js';
-import launch_app from '../helpers/launch_app.js';
+import launch_app from '../../helpers/launch_app.js';
 
 const { html_encode } = window;
 
