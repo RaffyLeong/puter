@@ -456,12 +456,10 @@ body {
     overflow: hidden;
 }
 
-/* --- Header (matches Files tab) --- */
 .springboard-header {
     position: sticky;
     top: 0;
     z-index: 10;
-    height: 94px;
     background: var(--dashboard-background);
     flex-shrink: 0;
 }
@@ -472,7 +470,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: flex-start;
-    padding: 20px 12px 10px 12px;
+    padding: 10px 12px 10px 12px;
     background: linear-gradient(0deg, var(--dashboard-sidebar-background), var(--dashboard-background));
     border-bottom: 1px solid var(--dashboard-border);
     gap: 10px;
@@ -520,124 +518,19 @@ body {
 }
 
 .springboard-action-btn:hover {
-    color: var(--dashboard-background);
-    background-color: var(--select-color);
+    background-color: var(--dashboard-hover);
 }
 
 .springboard-action-btn svg {
-    width: 24px;
-    height: 24px;
+    width: 18px;
+    height: 18px;
 }
 
-/* --- Category Pills Row --- */
-.springboard-filter-bar {
-    height: 47px;
-    display: flex;
-    align-items: center;
-    padding: 0 12px;
-    border-bottom: 1px solid var(--dashboard-border);
-    overflow: hidden;
-}
-
-.springboard-filter-bar-scroll {
-    display: flex;
-    gap: 8px;
-    overflow-x: auto;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-    padding: 6px 0;
-}
-
-.springboard-filter-bar-scroll::-webkit-scrollbar {
-    display: none;
-}
-
-.springboard-filter-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 5px 14px;
-    border-radius: 20px;
-    border: 1px solid var(--dashboard-border);
-    background: var(--dashboard-card-background);
-    color: var(--dashboard-text-secondary);
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    white-space: nowrap;
-    transition: all 0.15s ease;
-    flex-shrink: 0;
-}
-
-.springboard-filter-pill:hover {
-    background: var(--dashboard-hover);
-    border-color: var(--dashboard-text-tertiary);
-}
-
-.springboard-filter-pill.active {
-    background: var(--dashboard-text-heading);
-    color: var(--dashboard-background);
-    border-color: var(--dashboard-text-heading);
-}
-
-.springboard-filter-pill svg {
-    width: 14px;
-    height: 14px;
-    flex-shrink: 0;
-}
-
-/* --- Category Sidebar (shown on "All" tab) --- */
-.springboard-category-sidebar {
-    display: flex;
-    flex-direction: column;
-    min-width: 150px;
-    max-width: 150px;
-    padding: 4px 0;
-    border-right: 1px solid var(--dashboard-border);
-    overflow-y: auto;
-    flex-shrink: 0;
-}
-
-.springboard-category-item {
-    padding: 6px 16px;
-    font-size: 13px;
-    color: var(--dashboard-text-secondary);
-    cursor: pointer;
-    white-space: nowrap;
-    transition: color 0.15s ease, background-color 0.15s ease;
-}
-
-.springboard-category-item:hover {
-    color: var(--dashboard-text-heading);
-    background: var(--dashboard-hover);
-}
-
-.springboard-category-item.active {
-    color: var(--dashboard-link);
-    font-weight: 600;
-}
-
-/* --- App Grid (Springboard style) --- */
+/* --- App Grid --- */
 .springboard-grid-container {
     flex: 1;
     overflow-y: auto;
     padding: 20px 16px;
-}
-
-.springboard-grid-container.has-sidebar {
-    display: flex;
-    overflow: hidden;
-    padding: 0;
-}
-
-.springboard-grid-container.has-sidebar .springboard-grid {
-    flex: 1;
-    overflow-y: auto;
-    padding: 20px 16px;
-}
-
-.springboard-grid-container.has-sidebar .springboard-empty {
-    flex: 1;
 }
 
 .springboard-grid {
@@ -681,27 +574,6 @@ body {
     object-fit: cover;
 }
 
-.springboard-pin-badge {
-    position: absolute;
-    top: -4px;
-    right: -4px;
-    width: 18px;
-    height: 18px;
-    background: var(--dashboard-link);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.15);
-}
-
-.springboard-pin-badge svg {
-    width: 10px;
-    height: 10px;
-    fill: white;
-    stroke: none;
-}
-
 .springboard-app-title {
     font-size: 11px;
     color: var(--dashboard-text-heading);
@@ -711,41 +583,6 @@ body {
     text-overflow: ellipsis;
     white-space: nowrap;
     line-height: 1.3;
-}
-
-/* --- Developer Shortcuts (My Apps tab) --- */
-.springboard-dev-shortcuts {
-    display: flex;
-    gap: 12px;
-    padding: 0 16px 16px;
-}
-
-.springboard-dev-shortcut {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 18px;
-    border-radius: 8px;
-    border: 1px solid var(--dashboard-border);
-    background: var(--dashboard-card-background);
-    color: var(--dashboard-text-secondary);
-    font-size: 13px;
-    font-weight: 500;
-    text-decoration: none;
-    cursor: pointer;
-    transition: all 0.15s ease;
-}
-
-.springboard-dev-shortcut:hover {
-    background: var(--dashboard-hover);
-    border-color: var(--dashboard-text-tertiary);
-    color: var(--dashboard-text-heading);
-}
-
-.springboard-dev-shortcut svg {
-    width: 18px;
-    height: 18px;
-    flex-shrink: 0;
 }
 
 /* --- Empty State --- */
@@ -845,24 +682,9 @@ body {
         border-radius: 12px;
     }
 
-    .springboard-filter-pill {
-        padding: 5px 12px;
-        font-size: 12px;
-    }
-
     .springboard-search {
         flex: 1;
         min-width: 100px;
-    }
-
-    .springboard-category-sidebar {
-        display: none;
-    }
-
-    .springboard-grid-container.has-sidebar {
-        display: block;
-        overflow-y: auto;
-        padding: 20px 16px;
     }
 }
 
@@ -872,6 +694,7 @@ body {
         gap: 10px 4px;
     }
 }
+
 
 /* Dashboard files */
 
